@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>灵喵 | Mio</title>
+    
+    <!-- 核心依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iztro@2.0.5/dist/iztro.min.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        window.onerror = function(msg) { console.error("Runtime:", msg); return false; };
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                        mono: ['"SF Mono"', 'monospace']
+                    },
+                    colors: {
+                        sys: {
+                            base: 'var(--bg-base)',
+                            surface: 'var(--bg-surface)',
+                            surface2: 'var(--bg-surface-2)',
+                            main: 'var(--text-main)',
+                            muted: 'var(--text-muted)',
+                            border: 'var(--border-color)',
+                            primary: 'var(--color-primary)',
+                            accent: 'var(--color-accent)',
+                            highlight: 'var(--color-highlight)',
+                        }
+                    },
+                    boxShadow: { 
+                        'glass': '0 8px 30px rgba(0, 0, 0, 0.04)',
+                        'float': '0 20px 40px -10px rgba(0, 0, 0, 0.1)',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            /* Light Mode - iOS Inspired */
+            --bg-base: #F2F2F7;
+            --bg-surface: #FFFFFF;
+            --bg-surface-2: #E5E5EA;
+            --text-main: #000000;
+            --text-body: #1C1C1E;
+            --text-muted: #8E8E93;
+            --border-color: #D1D1D6;
+            --color-primary: #000000;
+            --color-accent: #FF2D55;
+            --color-highlight: #FF2D55;
+            --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+            --glow-color: rgba(0,0,0,0.05);
+        }
+
+        html.dark {
+            /* Dark Mode - iOS Inspired */
+            --bg-base: #000000;
+            --bg-surface: #1C1C1E;
+            --bg-surface-2: #2C2C2E;
+            --text-main: #FFFFFF;
+            --text-body: #E5E5EA;
+            --text-muted: #8E8E93;
+            --border-color: #38383A;
+            --color-primary: #FFFFFF;
+            --color-accent: #FF375F;
+            --color-highlight: #FF375F;
+            --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+            --glow-color: rgba(255,255,255,0.05);
+        }
+
+        body { 
+            background-color: var(--bg-base); 
+            color: var(--text-body); 
+            font-family: "Inter", -apple-system, "PingFang SC", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; margin-block: 30px; }
+        ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(5px); }
+        
+        .typing-dot { width: 5px; height: 5px; background-color: var(--text-muted); border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Typography */
+        strong, b, .prose strong, .prose b { color: var(--text-main) !important; font-weight: 600 !important; font-family: inherit !important; }
+        .highlight-marker { color: var(--color-highlight) !important; font-weight: 600; margin: 0 1px; font-family: inherit !important; }
+        .action-text { color: var(--text-muted); font-size: 0.85em; font-style: normal !important; margin-left: 2px; }
+
+        .prose blockquote { border-left: 3px solid var(--color-accent); background: var(--bg-surface-2); padding: 0.6rem 1rem; margin: 0.8rem 0; border-radius: 0 8px 8px 0; font-size: 0.9rem; color: var(--text-muted); font-style: normal; }
+        html.dark img, html.dark video { filter: brightness(0.85); }
+
+        .quantum-spinner {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0%, var(--text-muted) 100%);
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+            animation: spin 1s linear infinite;
+        }
+        .dark .quantum-spinner { background: conic-gradient(from 0deg, transparent 0%, var(--text-main) 100%); }
+        
+        /* Parameters Bar */
+        .param-badge {
+            display: inline-flex; align-items: center; gap: 0.375rem; background-color: var(--bg-surface-2);
+            color: var(--text-muted); font-size: 0.65rem; font-weight: 500; padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem; border: 1px solid var(--border-color); white-space: nowrap;
+        }
+        .param-badge.active { color: var(--text-main); border-color: var(--text-muted); }
+    </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden flex flex-col items-center justify-center text-sys-body selection:bg-sys-accent selection:text-white">
+
+    <div id="app" class="w-full h-full md:max-w-4xl md:h-[90vh] md:rounded-[20px] flex flex-col relative bg-sys-base shadow-2xl md:border md:border-sys-border overflow-hidden transition-all duration-300">
+
+        <!-- Header -->
+        <header class="w-full px-6 py-5 flex justify-between items-center bg-sys-base/95 backdrop-blur-xl z-30 sticky top-0">
+            <div class="flex items-center gap-3 group cursor-pointer" @click="returnToHome">
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm transition-transform group-hover:scale-95 bg-sys-surface">
+                    <img :src="isDarkMode ? 'https://i.imgs.ovh/2026/01/15/yFdIvC.png' : 'https://i.imgs.ovh/2026/01/15/yFdAQm.png'" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-base font-bold tracking-tight text-sys-main">灵喵</h1>
+                    <span class="text-[0.65rem] text-sys-muted font-medium tracking-wide">DivineChat</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="returnToHome" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-sys-surface2 transition-colors text-sys-muted hover:text-sys-main" title="新建对话">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                </button>
+                <button @click="showHistory = true" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-sys-surface2 transition-colors text-sys-muted hover:text-sys-main" title="历史记录">
+                    <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                </button>
+                <button @click="toggleDarkMode" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-sys-surface2 transition-colors text-sys-muted hover:text-sys-main" title="切换外观">
+                    <i :class="['fa-solid', isDarkMode ? 'fa-sun' : 'fa-moon', 'text-sm']"></i>
+                </button>
+                <button @click="showSettings = true" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-sys-surface2 transition-colors text-sys-muted hover:text-sys-main" title="设置">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 w-full relative overflow-hidden flex flex-col">
+            <!-- 1. Input View - 极致紧凑版 -->
+            <!-- 优化目标：减少 padding、margin 和 input 高度，确保一屏展示 -->
+            <transition name="fade">
+                <div v-if="!chartGenerated" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-sys-base overflow-y-auto">
+                    <div class="w-full max-w-sm space-y-4 animate-fade-in-up">
+                        <div class="text-center space-y-1">
+                            <h2 class="text-xl font-bold text-sys-main tracking-tight">开启命理推演</h2>
+                            <p class="text-xs text-sys-muted">真太阳时 · 紫微斗数 · 子平八字</p>
+                        </div>
+                        
+                        <div class="space-y-3 bg-sys-surface p-5 rounded-[20px] shadow-glass border border-sys-border">
+                            <!-- 姓名 & 性别 合并优化空间 -->
+                            <div class="space-y-1">
+                                <label class="text-[0.65rem] font-semibold text-sys-muted ml-1">个人信息</label>
+                                <div class="flex gap-3">
+                                    <div class="flex-[1.5]">
+                                        <input v-model="userInput.name" type="text" placeholder="您的称呼" class="w-full bg-sys-surface2 rounded-xl px-3 py-2.5 text-sm text-sys-main placeholder-sys-muted/50 focus:outline-none focus:ring-2 focus:ring-sys-border transition-all">
+                                    </div>
+                                    <div class="flex-1 flex bg-sys-surface2 rounded-xl p-1">
+                                        <button @click="userInput.gender = 'male'" :class="['flex-1 rounded-lg text-xs font-medium transition-all', userInput.gender === 'male' ? 'bg-sys-surface text-sys-main shadow-sm' : 'text-sys-muted hover:text-sys-main']">男</button>
+                                        <button @click="userInput.gender = 'female'" :class="['flex-1 rounded-lg text-xs font-medium transition-all', userInput.gender === 'female' ? 'bg-sys-surface text-sys-main shadow-sm' : 'text-sys-muted hover:text-sys-main']">女</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[0.65rem] font-semibold text-sys-muted ml-1">出生地</label>
+                                    <div class="relative">
+                                        <select v-model="userInput.province" @change="handleProvinceChange" class="w-full bg-sys-surface2 rounded-xl px-3 py-2.5 text-sm text-sys-main appearance-none focus:outline-none focus:ring-2 focus:ring-sys-border transition-all cursor-pointer">
+                                            <option v-for="(cities, prov) in chinaAreaData" :key="prov" :value="prov">{{ prov }}</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[0.6rem] text-sys-muted pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[0.65rem] font-semibold text-sys-muted ml-1">&nbsp;</label> <!-- Spacer for alignment -->
+                                    <div class="relative">
+                                        <select v-model="userInput.city" class="w-full bg-sys-surface2 rounded-xl px-3 py-2.5 text-sm text-sys-main appearance-none focus:outline-none focus:ring-2 focus:ring-sys-border transition-all cursor-pointer" :disabled="!userInput.province">
+                                            <option v-for="city in availableCities" :key="city.name" :value="city">{{ city.name }}</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[0.6rem] text-sys-muted pointer-events-none"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[0.65rem] font-semibold text-sys-muted ml-1">出生日期 (公历)</label>
+                                    <input v-model="userInput.date" type="date" class="w-full bg-sys-surface2 rounded-xl px-3 py-2.5 text-sm text-sys-main focus:outline-none focus:ring-2 focus:ring-sys-border transition-all font-sans dark:[color-scheme:dark]">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[0.65rem] font-semibold text-sys-muted ml-1">出生时辰</label>
+                                    <div class="relative">
+                                        <select v-model="userInput.time" class="w-full bg-sys-surface2 rounded-xl px-3 py-2.5 text-sm text-sys-main appearance-none focus:outline-none focus:ring-2 focus:ring-sys-border transition-all cursor-pointer">
+                                            <option v-for="t in shichenOptions" :key="t.val" :value="t.val">{{ t.name }} ({{ t.range }})</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[0.6rem] text-sys-muted pointer-events-none"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-1">
+                                <button @click="generateChart" class="w-full bg-sys-primary text-sys-base py-3 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-sys-primary/10">
+                                    <span v-if="!isCalculating">开始推演</span><span v-else>推演中...</span>
+                                    <i v-if="!isCalculating" class="fa-solid fa-arrow-right text-xs opacity-70"></i>
+                                </button>
+                                <div class="mt-2.5 flex justify-center items-center gap-1.5 text-[0.6rem] text-sys-muted opacity-70">
+                                    <i class="fa-solid fa-shield-halved"></i><span>本地加密计算 · 隐私不上传</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Loading -->
+            <transition name="fade">
+                <div v-if="isCalculating" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-sys-base/80 backdrop-blur-xl">
+                    <div class="quantum-spinner mb-8"></div>
+                    <div class="text-sys-main font-bold text-lg tracking-wider animate-pulse">沟通天地...</div>
+                    <div class="text-sys-muted text-sm mt-2 font-mono opacity-80">正在排布紫微星盘</div>
+                </div>
+            </transition>
+
+            <!-- 2. Chat View -->
+            <transition name="fade">
+                <div v-if="chartGenerated && !isCalculating" class="flex-1 flex flex-col h-full bg-sys-base">
+                    
+                    <!-- 移除了 border-b 以实现无缝 -->
+                    <div class="px-6 pt-3 pb-3 bg-sys-base/90 backdrop-blur-xl z-10">
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="param-badge active text-sys-accent"><i :class="['fa-solid', chartData.gender === '男' ? 'fa-mars' : 'fa-venus']"></i>{{ chartData.gender }}</span>
+                            <span class="param-badge">{{ chartData.zodiac }}年</span>
+                            <span class="param-badge">{{ chartData.lunarDateStr.slice(5) }}</span>
+                            <span class="param-badge font-mono font-bold text-sys-main border-sys-main/20">{{ chartData.baziString }}</span>
+                            <span class="param-badge">{{ chartData.nayin }}</span>
+                            <span class="param-badge" v-if="chartData.minggong">命宫:{{ chartData.minggong }}</span>
+                            <span class="param-badge" v-if="chartData.kongwang">空亡:{{ chartData.kongwang }}</span>
+                            <span class="param-badge">{{ chartData.currentDayunSimple }}</span>
+                            <span class="param-badge">{{ chartData.currentLiunianSimple }}</span>
+                            <span class="param-badge ml-auto text-sys-accent border-sys-accent/30 bg-sys-accent/5"><i class="fa-solid fa-location-arrow mr-1"></i>{{ userInput.city.name }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Persona Switcher -->
+                    <div class="px-6 pt-2 pb-2 bg-sys-base z-10">
+                        <div class="flex p-1 bg-sys-surface2 rounded-xl overflow-x-auto no-scrollbar">
+                            <button v-for="role in personas" :key="role.id" @click="switchPersona(role.id)" :class="['flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-300 whitespace-nowrap', currentPersonaId === role.id ? 'bg-sys-surface text-sys-main shadow-sm' : 'text-sys-muted hover:text-sys-main']">
+                                <i :class="['fa-solid mr-1', role.icon]"></i>{{ role.name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div ref="chatRef" class="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 no-scrollbar scroll-smooth">
+                        <!-- Summary Card -->
+                        <div v-if="chatHistory.length === 0" class="w-full bg-sys-surface rounded-[24px] p-6 shadow-glass border border-sys-border animate-fade-in-up">
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-1 h-5 bg-sys-accent rounded-full"></div>
+                                <h3 class="text-sm font-bold text-sys-main">命盘格局</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm leading-relaxed text-sys-body">
+                                <div class="bg-sys-base/50 p-4 rounded-xl">
+                                    <p class="text-xs font-bold text-sys-muted mb-2 uppercase tracking-wider">紫微三方四正</p>
+                                    <p class="font-medium text-sys-main">{{ chartData.ziweiSummary }}</p>
+                                </div>
+                                <div class="bg-sys-base/50 p-4 rounded-xl">
+                                    <p class="text-xs font-bold text-sys-muted mb-2 uppercase tracking-wider">当前大运</p>
+                                    <p class="font-medium text-sys-main">{{ chartData.currentDayunStr }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message List -->
+                        <div v-for="(msg, index) in chatHistory" :key="index" class="w-full animate-fade-in-up">
+                            <div v-if="msg.role === 'event'" class="flex justify-center my-6">
+                                <span class="bg-sys-surface2 text-sys-muted text-[0.65rem] px-4 py-1.5 rounded-full font-medium">{{ msg.content }}</span>
+                            </div>
+                            <div v-else>
+                                <div class="flex justify-center mb-3"><span class="text-[0.6rem] text-sys-muted/40 font-mono select-none">{{ formatMsgTime(msg.timestamp) }}</span></div>
+                                
+                                <!-- User Bubble: 保持完美 -->
+                                <div v-if="msg.role === 'user'" class="flex justify-end">
+                                    <div class="max-w-[85%] w-fit bg-sys-primary text-sys-base px-4 py-3 rounded-2xl rounded-tr-sm shadow-md text-sm leading-relaxed tracking-wide">{{ msg.content }}</div>
+                                </div>
+
+                                <!-- AI Bubble: 顶级优化的自适应气泡 -->
+                                <div v-else class="flex gap-3">
+                                    <div class="flex-shrink-0 flex flex-col items-center">
+                                        <div class="w-10 h-10 rounded-full bg-sys-surface border border-sys-border flex items-center justify-center text-sys-main shadow-sm"><i :class="['fa-solid text-sm', msg.icon || currentPersona.icon]"></i></div>
+                                    </div>
+                                    <div class="flex flex-col items-start max-w-[85%]">
+                                        <div class="flex items-baseline gap-2 mb-1.5 ml-1">
+                                            <span class="text-xs font-bold text-sys-main">{{ msg.name || currentPersona.name }}</span>
+                                            <span class="text-[0.6rem] text-sys-muted">{{ msg.desc || currentPersona.desc }}</span>
+                                        </div>
+                                        <div class="bg-sys-surface border border-sys-border px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-sys-body prose prose-sm max-w-none w-fit break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 prose-p:leading-relaxed prose-p:my-1 prose-pre:my-2 prose-pre:bg-sys-base prose-pre:rounded-lg">
+                                            <div v-html="renderMarkdown(msg.content)"></div>
+                                            <div v-if="msg.isTyping" class="flex gap-1.5 py-1 mt-1"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="h-16"></div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="absolute bottom-6 left-0 right-0 px-4 md:px-8 z-20">
+                        <div class="max-w-3xl mx-auto bg-sys-surface/80 backdrop-blur-xl rounded-[28px] shadow-float border border-sys-border p-2 pl-4 flex items-center gap-3 transition-all focus-within:ring-2 focus-within:ring-sys-border focus-within:bg-sys-surface">
+                            <input v-model="userMessage" @keyup.enter="handleSend" type="text" :placeholder="isLoading ? '阁主正在记录...' : `向${currentPersona.name}提问...`" :disabled="isLoading" class="flex-1 bg-transparent px-4 py-3 text-sm text-sys-main placeholder-sys-muted focus:outline-none">
+                            <button @click="handleSend" :disabled="isLoading || !userMessage.trim()" class="w-10 h-10 rounded-full bg-sys-primary text-sys-base flex items-center justify-center hover:opacity-90 hover:scale-105 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed transition-all shadow-md">
+                                <i v-if="!isLoading" class="fa-solid fa-arrow-up text-sm"></i>
+                                <i v-else class="fa-solid fa-circle-notch fa-spin text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </main>
+
+        <!-- Settings Modal -->
+        <div v-if="showSettings" class="absolute inset-0 z-50 bg-sys-base/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-sys-surface w-full max-w-sm rounded-[24px] p-8 shadow-2xl border border-sys-border transform transition-all animate-fade-in-up">
+                <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-bold text-sys-main">系统设置</h3><button @click="showSettings = false" class="w-8 h-8 rounded-full bg-sys-surface2 text-sys-muted hover:text-sys-main flex items-center justify-center transition-colors"><i class="fa-solid fa-times text-sm"></i></button></div>
+                <div class="space-y-5">
+                    <div class="input-wrapper"><label class="block text-[0.7rem] font-bold text-sys-muted uppercase tracking-wider mb-2">API Endpoint</label><input v-model="settings.baseUrl" class="w-full bg-sys-surface2 rounded-xl px-4 py-3 text-sm text-sys-main focus:outline-none focus:ring-2 focus:ring-sys-border transition-all"></div>
+                    <div class="input-wrapper"><label class="block text-[0.7rem] font-bold text-sys-muted uppercase tracking-wider mb-2">API Key</label><input v-model="settings.apiKey" type="password" class="w-full bg-sys-surface2 rounded-xl px-4 py-3 text-sm text-sys-main focus:outline-none focus:ring-2 focus:ring-sys-border transition-all"></div>
+                    <div class="input-wrapper"><label class="block text-[0.7rem] font-bold text-sys-muted uppercase tracking-wider mb-2">Model Name</label><input v-model="settings.model" class="w-full bg-sys-surface2 rounded-xl px-4 py-3 text-sm text-sys-main focus:outline-none focus:ring-2 focus:ring-sys-border transition-all"></div>
+                    <div v-if="verifyStatus" :class="['text-xs px-4 py-3 rounded-xl flex items-center gap-2 font-medium', verifyStatus.ok ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400']"><i :class="['fa-solid', verifyStatus.ok ? 'fa-check' : 'fa-exclamation-circle']"></i>{{ verifyStatus.msg }}</div>
+                </div>
+                <div class="mt-8 flex gap-3"><button @click="runTest" :disabled="isVerifying" class="flex-1 py-3.5 bg-sys-surface2 rounded-xl text-sm font-bold text-sys-muted hover:bg-sys-base transition-colors">{{ isVerifying ? '连接中...' : '测试连接' }}</button><button @click="saveSettings" class="flex-1 py-3.5 bg-sys-primary text-sys-base rounded-xl text-sm font-bold hover:opacity-90 transition-colors">保存配置</button></div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div v-if="showHistory" class="absolute inset-0 z-50 bg-sys-base/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-sys-surface w-full max-w-sm rounded-[24px] p-8 shadow-2xl border border-sys-border transform transition-all animate-fade-in-up flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-sys-main">推演记录</h3><button @click="showHistory = false" class="w-8 h-8 rounded-full bg-sys-surface2 text-sys-muted hover:text-sys-main flex items-center justify-center transition-colors"><i class="fa-solid fa-times text-sm"></i></button></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 -mr-2 scroll-smooth">
+                    <div v-if="sessions.length === 0" class="text-center py-10 text-sys-muted text-sm">暂无历史记录</div>
+                    <div v-for="session in sortedSessions" :key="session.id" class="group relative bg-sys-surface2/50 hover:bg-sys-surface2 rounded-2xl p-4 transition-all cursor-pointer border border-transparent hover:border-sys-border" @click="loadSession(session.id)">
+                        <div class="flex justify-between items-start mb-2"><span class="text-sm font-bold text-sys-main">{{ session.name || '有缘人' }}</span><span class="text-[0.65rem] text-sys-muted font-medium bg-sys-base px-2 py-0.5 rounded">{{ formatDate(session.timestamp) }}</span></div>
+                        <div class="text-xs text-sys-muted line-clamp-2 leading-relaxed">{{ session.summary }}</div>
+                        <button @click.stop="deleteSession(session.id)" class="absolute top-3 right-3 p-2 text-sys-muted/50 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>
+                <!-- Clear All Button -->
+                <div v-if="sessions.length > 0" class="mt-4 pt-4 border-t border-sys-border">
+                    <button @click="clearAllSessions" class="w-full py-3 rounded-xl bg-sys-surface2 text-sys-accent text-sm font-bold hover:bg-sys-base transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i>清空所有记录
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+const { createApp, ref, computed, nextTick, reactive, watch, onMounted } = Vue;
+
+class LLMService {
+    constructor(config) { this.config = config; this.abortController = null; }
+    _buildUrl(path) {
+        let base = this.config.baseUrl.trim().replace(/\/+$/, '');
+        if (!base.includes('/v1') && !base.includes('/chat/completions')) base += '/v1';
+        return `${base}${path}`;
+    }
+    async chatStream(messages, onChunk, onError, onFinish) {
+        this.abortController = new AbortController();
+        const url = this._buildUrl('/chat/completions');
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.config.apiKey}` },
+                body: JSON.stringify({ model: this.config.model, messages: messages, stream: true, temperature: 0.7 }),
+                signal: this.abortController.signal
+            });
+            if (!res.ok) {
+                let errDetails = res.statusText;
+                try { const j = await res.json(); if(j.error?.message) errDetails = j.error.message; } catch(e){}
+                throw new Error(`API ${res.status}: ${errDetails}`);
+            }
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let buffer = "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed === 'data: [DONE]') continue;
+                    if (trimmed.startsWith('data: ')) {
+                        try {
+                            const json = JSON.parse(trimmed.slice(6));
+                            const content = json.choices[0]?.delta?.content || '';
+                            if (content) onChunk(content);
+                        } catch (e) {}
+                    }
+                }
+            }
+            if (onFinish) onFinish();
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            onError(error.message);
+        }
+    }
+
+    async testConnection() {
+        const url = this._buildUrl('/chat/completions');
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.config.apiKey}` },
+                body: JSON.stringify({ model: this.config.model, messages: [{ role: "user", content: "Hi" }] })
+            });
+            return res.ok ? { ok: true, msg: "连接成功" } : { ok: false, msg: `错误 ${res.status}` };
+        } catch (e) { return { ok: false, msg: "网络错误" }; }
+    }
+}
+
+// Data (Abbreviated for safety but functional logic retained)
+const CHINA_AREA_DATA={"北京市":[{name:"北京市",lon:116.4}],"天津市":[{name:"天津市",lon:117.2}],"上海市":[{name:"上海市",lon:121.47}],"重庆市":[{name:"重庆市",lon:106.55}],"河北省":[{name:"石家庄市",lon:114.48},{name:"唐山市",lon:118.02},{name:"秦皇岛市",lon:119.57},{name:"邯郸市",lon:114.47},{name:"邢台市",lon:114.48},{name:"保定市",lon:115.48},{name:"张家口市",lon:114.87},{name:"承德市",lon:117.93},{name:"沧州市",lon:116.83},{name:"廊坊市",lon:116.7},{name:"衡水市",lon:115.72}],"山西省":[{name:"太原市",lon:112.53},{name:"大同市",lon:113.3},{name:"阳泉市",lon:113.57},{name:"长治市",lon:113.08},{name:"晋城市",lon:112.83},{name:"朔州市",lon:112.43},{name:"晋中市",lon:112.75},{name:"运城市",lon:111},{name:"忻州市",lon:112.73},{name:"临汾市",lon:111.52},{name:"吕梁市",lon:111.13}],"辽宁省":[{name:"沈阳市",lon:123.38},{name:"大连市",lon:121.62},{name:"鞍山市",lon:122.99},{name:"抚顺市",lon:123.97},{name:"本溪市",lon:123.73},{name:"丹东市",lon:124.37},{name:"锦州市",lon:121.15},{name:"营口市",lon:122.18},{name:"阜新市",lon:121.65},{name:"辽阳市",lon:123.17},{name:"盘锦市",lon:122.07},{name:"铁岭市",lon:123.85},{name:"朝阳市",lon:120.42},{name:"葫芦岛市",lon:120.83}],"吉林省":[{name:"长春市",lon:125.35},{name:"吉林市",lon:126.57},{name:"四平市",lon:124.37},{name:"辽源市",lon:125.15},{name:"通化市",lon:125.92},{name:"白山市",lon:126.4},{name:"松原市",lon:124.82},{name:"白城市",lon:122.82},{name:"延边",lon:129.52}],"黑龙江省":[{name:"哈尔滨市",lon:126.63},{name:"齐齐哈尔市",lon:123.97},{name:"鸡西市",lon:130.97},{name:"鹤岗市",lon:130.28},{name:"双鸭山市",lon:131.17},{name:"大庆市",lon:125.03},{name:"伊春市",lon:128.92},{name:"佳木斯市",lon:130.35},{name:"七台河市",lon:131.02},{name:"牡丹江市",lon:129.62},{name:"黑河市",lon:127.53},{name:"绥化市",lon:126.98},{name:"大兴安岭",lon:124.72},{name:"漠河",lon:122.37}],"江苏省":[{name:"南京市",lon:118.78},{name:"无锡市",lon:120.29},{name:"徐州市",lon:117.18},{name:"常州市",lon:119.95},{name:"苏州市",lon:120.62},{name:"南通市",lon:120.86},{name:"连云港市",lon:119.16},{name:"淮安市",lon:119.02},{name:"盐城市",lon:120.13},{name:"扬州市",lon:119.42},{name:"镇江市",lon:119.44},{name:"泰州市",lon:119.9},{name:"宿迁市",lon:118.28}],"浙江省":[{name:"杭州市",lon:120.15},{name:"宁波市",lon:121.56},{name:"温州市",lon:120.65},{name:"嘉兴市",lon:120.76},{name:"湖州市",lon:120.1},{name:"绍兴市",lon:120.58},{name:"金华市",lon:119.64},{name:"衢州市",lon:118.88},{name:"舟山市",lon:122.2},{name:"台州市",lon:121.42},{name:"丽水市",lon:119.92}],"安徽省":[{name:"合肥市",lon:117.27},{name:"芜湖市",lon:118.38},{name:"蚌埠市",lon:117.34},{name:"淮南市",lon:116.98},{name:"马鞍山市",lon:118.5},{name:"淮北市",lon:116.8},{name:"铜陵市",lon:117.82},{name:"安庆市",lon:117.05},{name:"黄山市",lon:118.32},{name:"滁州市",lon:118.31},{name:"阜阳市",lon:115.82},{name:"宿州市",lon:116.97},{name:"六安市",lon:116.5},{name:"亳州市",lon:115.78},{name:"池州市",lon:117.48},{name:"宣城市",lon:118.75}],"福建省":[{name:"福州市",lon:119.3},{name:"厦门市",lon:118.1},{name:"莆田市",lon:119},{name:"三明市",lon:117.63},{name:"泉州市",lon:118.58},{name:"漳州市",lon:117.66},{name:"南平市",lon:118.17},{name:"龙岩市",lon:117.03},{name:"宁德市",lon:119.52}],"江西省":[{name:"南昌市",lon:115.89},{name:"景德镇市",lon:117.22},{name:"萍乡市",lon:113.85},{name:"九江市",lon:115.97},{name:"新余市",lon:114.92},{name:"鹰潭市",lon:117.03},{name:"赣州市",lon:114.94},{name:"吉安市",lon:114.97},{name:"宜春市",lon:114.38},{name:"抚州市",lon:116.35},{name:"上饶市",lon:117.98}],"山东省":[{name:"济南市",lon:117},{name:"青岛市",lon:120.33},{name:"淄博市",lon:118.05},{name:"枣庄市",lon:117.57},{name:"东营市",lon:118.49},{name:"烟台市",lon:121.39},{name:"潍坊市",lon:119.1},{name:"济宁市",lon:116.59},{name:"泰安市",lon:117.13},{name:"威海市",lon:122.1},{name:"日照市",lon:119.46},{name:"临沂市",lon:118.35},{name:"德州市",lon:116.39},{name:"聊城市",lon:115.97},{name:"滨州市",lon:118.03},{name:"菏泽市",lon:115.48}],"河南省":[{name:"郑州市",lon:113.65},{name:"开封市",lon:114.35},{name:"洛阳市",lon:112.42},{name:"平顶山市",lon:113.29},{name:"安阳市",lon:114.35},{name:"鹤壁市",lon:114.28},{name:"新乡市",lon:113.85},{name:"焦作市",lon:113.23},{name:"濮阳市",lon:115.03},{name:"许昌市",lon:113.81},{name:"漯河市",lon:114.02},{name:"三门峡市",lon:111.19},{name:"南阳市",lon:112.53},{name:"商丘市",lon:115.65},{name:"信阳市",lon:114.07},{name:"周口市",lon:114.63},{name:"驻马店市",lon:114.03}],"湖北省":[{name:"武汉市",lon:114.3},{name:"黄石市",lon:115.08},{name:"十堰市",lon:110.78},{name:"宜昌市",lon:111.27},{name:"襄阳市",lon:112.14},{name:"鄂州市",lon:114.88},{name:"荆门市",lon:112.2},{name:"孝感市",lon:113.92},{name:"荆州市",lon:112.23},{name:"黄冈市",lon:114.87},{name:"咸宁市",lon:114.32},{name:"随州市",lon:113.37},{name:"恩施",lon:109.48}],"湖南省":[{name:"长沙市",lon:112.98},{name:"株洲市",lon:113.15},{name:"湘潭市",lon:112.91},{name:"衡阳市",lon:112.61},{name:"邵阳市",lon:111.45},{name:"岳阳市",lon:113.13},{name:"常德市",lon:111.69},{name:"张家界市",lon:110.48},{name:"益阳市",lon:112.33},{name:"郴州市",lon:113.03},{name:"永州市",lon:111.6},{name:"怀化市",lon:110},{name:"娄底市",lon:112},{name:"湘西",lon:109.73}],"广东省":[{name:"广州市",lon:113.26},{name:"韶关市",lon:113.6},{name:"深圳市",lon:114.05},{name:"珠海市",lon:113.52},{name:"汕头市",lon:116.7},{name:"佛山市",lon:113.11},{name:"江门市",lon:113.06},{name:"湛江市",lon:110.4},{name:"茂名市",lon:110.88},{name:"肇庆市",lon:112.44},{name:"惠州市",lon:114.4},{name:"梅州市",lon:116.1},{name:"汕尾市",lon:115.37},{name:"河源市",lon:114.68},{name:"阳江市",lon:111.95},{name:"清远市",lon:113.01},{name:"东莞市",lon:113.75},{name:"中山市",lon:113.38},{name:"潮州市",lon:116.63},{name:"揭阳市",lon:116.35},{name:"云浮市",lon:112.02}],"广西":[{name:"南宁市",lon:108.33},{name:"柳州市",lon:109.4},{name:"桂林市",lon:110.28},{name:"梧州市",lon:111.34},{name:"北海市",lon:109.12},{name:"防城港市",lon:108.35},{name:"钦州市",lon:108.62},{name:"贵港市",lon:109.6},{name:"玉林市",lon:110.14},{name:"百色市",lon:106.62},{name:"贺州市",lon:111.55},{name:"河池市",lon:107.86},{name:"来宾市",lon:109.24},{name:"崇左市",lon:107.37}],"海南省":[{name:"海口市",lon:110.35},{name:"三亚市",lon:109.51},{name:"三沙市",lon:112.34},{name:"儋州市",lon:109.57}],"四川省":[{name:"成都市",lon:104.06},{name:"自贡市",lon:104.78},{name:"攀枝花市",lon:101.71},{name:"泸州市",lon:105.39},{name:"德阳市",lon:104.37},{name:"绵阳市",lon:104.73},{name:"广元市",lon:105.86},{name:"遂宁市",lon:105.59},{name:"内江市",lon:105.02},{name:"乐山市",lon:103.76},{name:"南充市",lon:106.1},{name:"眉山市",lon:103.81},{name:"宜宾市",lon:104.56},{name:"广安市",lon:106.61},{name:"达州市",lon:107.49},{name:"雅安市",lon:103},{name:"巴中市",lon:106.73},{name:"资阳市",lon:104.64},{name:"阿坝",lon:102.22},{name:"甘孜",lon:101.96},{name:"凉山",lon:102.29}],"贵州省":[{name:"贵阳市",lon:106.71},{name:"六盘水市",lon:104.84},{name:"遵义市",lon:106.9},{name:"安顺市",lon:105.93},{name:"毕节市",lon:105.28},{name:"铜仁市",lon:109.19},{name:"黔西南",lon:104.9},{name:"黔东南",lon:107.97},{name:"黔南",lon:107.51}],"云南省":[{name:"昆明市",lon:102.73},{name:"曲靖市",lon:103.79},{name:"玉溪市",lon:102.52},{name:"保山市",lon:99.15},{name:"昭通市",lon:103.7},{name:"丽江市",lon:100.23},{name:"普洱市",lon:100.97},{name:"临沧市",lon:100.08},{name:"楚雄",lon:101.54},{name:"红河",lon:103.38},{name:"文山",lon:104.24},{name:"西双版纳",lon:100.8},{name:"大理",lon:100.24},{name:"德宏",lon:98.58},{name:"怒江",lon:98.85},{name:"迪庆",lon:99.7}],"西藏":[{name:"拉萨市",lon:91.11},{name:"日喀则市",lon:88.89},{name:"昌都市",lon:97.18},{name:"林芝市",lon:94.36},{name:"山南市",lon:91.76},{name:"那曲市",lon:92.06},{name:"阿里地区",lon:80.1}],"陕西省":[{name:"西安市",lon:108.93},{name:"铜川市",lon:109.11},{name:"宝鸡市",lon:107.15},{name:"咸阳市",lon:108.68},{name:"渭南市",lon:109.5},{name:"延安市",lon:109.47},{name:"汉中市",lon:107.03},{name:"榆林市",lon:109.74},{name:"安康市",lon:109.02},{name:"商洛市",lon:109.93}],"甘肃省":[{name:"兰州市",lon:103.73},{name:"嘉峪关市",lon:98.28},{name:"金昌市",lon:102.19},{name:"白银市",lon:104.17},{name:"天水市",lon:105.69},{name:"武威市",lon:102.61},{name:"张掖市",lon:100.46},{name:"平凉市",lon:106.68},{name:"酒泉市",lon:98.5},{name:"庆阳市",lon:107.63},{name:"定西市",lon:104.62},{name:"陇南市",lon:104.92},{name:"临夏",lon:103.2},{name:"甘南",lon:102.91}],"青海省":[{name:"西宁市",lon:101.74},{name:"海东市",lon:102.1},{name:"海北",lon:100.9},{name:"黄南",lon:102.01},{name:"海南",lon:100.62},{name:"果洛",lon:100.25},{name:"玉树",lon:96.99},{name:"海西",lon:97.37}],"宁夏":[{name:"银川市",lon:106.27},{name:"石嘴山市",lon:106.39},{name:"吴忠市",lon:106.21},{name:"固原市",lon:106.28},{name:"中卫市",lon:105.18}],"新疆":[{name:"乌鲁木齐市",lon:87.68},{name:"克拉玛依市",lon:84.87},{name:"吐鲁番市",lon:89.19},{name:"哈密市",lon:93.51},{name:"昌吉",lon:87.3},{name:"博尔塔拉",lon:82.07},{name:"巴音郭楞",lon:86.15},{name:"阿克苏",lon:80.26},{name:"克孜勒苏",lon:76.17},{name:"喀什",lon:75.99},{name:"和田",lon:79.94},{name:"伊犁",lon:81.33},{name:"塔城",lon:83},{name:"阿勒泰",lon:88.13}],"香港":[{name:"香港",lon:114.17}],"澳门":[{name:"澳门",lon:113.54}],"台湾":[{name:"台北市",lon:121.5},{name:"高雄市",lon:120.3},{name:"台中市",lon:120.67},{name:"台南市",lon:120.2}]};
+
+const SHICHEN_OPTIONS=[{name:'子时',range:'23:00-01:00',val:0},{name:'丑时',range:'01:00-03:00',val:2},{name:'寅时',range:'03:00-05:00',val:4},{name:'卯时',range:'05:00-07:00',val:6},{name:'辰时',range:'07:00-09:00',val:8},{name:'巳时',range:'09:00-11:00',val:10},{name:'午时',range:'11:00-13:00',val:12},{name:'未时',range:'13:00-15:00',val:14},{name:'申时',range:'15:00-17:00',val:16},{name:'酉时',range:'17:00-19:00',val:18},{name:'戌时',range:'19:00-21:00',val:20},{name:'亥时',range:'21:00-23:00',val:22}];
+
+// ==========================================
+// 🌌 灵喵·书香防幻觉版 (Library & Truth)
+// ==========================================
+
+const BASE_RULES = `
+### 🛡️ 绝对真理协议 (ZERO HALLUCINATION PROTOCOL)
+1. **数据原教旨主义**：你的一切推演必须严格基于用户传入的【八字】、【紫微】、【大运】数据。
+   - 🚫 严禁编造星盘中不存在的星曜。
+   - 🚫 严禁无视五行强弱乱断吉凶（例如：明明八字火旺，不可说喜火）。
+2. **时间锚点**：时刻感知【当前物理时间】(${new Date().getFullYear()}年)，一切分析基于当下的流年。
+3. **格式铁律**：
+   - 🚫 **绝对禁止**使用 Markdown 的 * 或 ** 符号。
+   - ✅ **加粗**：用 \`[b]内容[/b]\`
+   - ✅ **高亮**（关键断语/应期）：用 \`[h]内容[/h]\`
+   - ✅ **动作/神态**（必须有）：用 \`[s]内容[/s]\`
+`;
+
+const PERSONAS = [
+    { 
+        id: 'qingxu', name: '清虚道长', icon: 'fa-yin-yang', desc: '三合派 · 平衡之道',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：清虚道长
+        **必读经典**：《道德经》、《易经》、《太乙金华宗旨》、《渊海子平》。
+        **核心哲学**：道法自然，阴阳平衡。吉凶悔吝，生乎动者也。
+        
+        **推演逻辑**：
+        1. **观气象**：基于《渊海子平》的病药之说，分析八字 [b]${ctx.baziString}[/b] 的五行流通。
+        2. **断大运**：结合《易经》变爻思维，判断大运 [b]${ctx.currentDayunSimple}[/b] 是进气还是退气。
+        3. **劝修心**：引用道家经典，告诉施主如何顺势而为。
+        
+        **当前任务**：
+        用户 ${ctx.name} (${ctx.gender})。纳音：${ctx.nayin}。
+        当前时间 **${ctx.currentTime}**。
+        请以出世的高人姿态解答。结论处请用 [h]高亮[/h] 标记。
+        `
+    },
+    { 
+        id: 'xuanji', name: '玄机子', icon: 'fa-cube', desc: '飞星四化 · 逻辑推演',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：玄机子
+        **必读经典**：《紫微斗数全书》、《控制论》(Cybernetics)、《系统工程导论》。
+        **核心哲学**：命运是精密的算法系统，四化是变量的触发器。
+        
+        **推演逻辑**：
+        1. **系统建模**：基于《紫微斗数全书》的星情法则，分析 [b]${ctx.ziweiDeep}[/b] 的结构稳定性。
+        2. **变量触发**：今年 [h]${ctx.currentLiunianSimple}[/h] 触发了哪条逻辑链（化禄/化忌）？
+        3. **量化输出**：拒绝模棱两可，给出基于逻辑推导的确定性结论。
+        
+        **当前任务**：
+        用户 ${ctx.name}。当前时间 **${ctx.currentTime}**。
+        请像解剖手术一样拆解运势。关键节点用 [h]高亮[/h] 标记。
+        `
+    },
+    { 
+        id: 'tiekou', name: '铁口刘', icon: 'fa-gavel', desc: '盲派江湖 · 直断吉凶',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：铁口刘
+        **必读经典**：《滴天髓》、《三命通会》（实战篇）、《金吊桶秘笈》。
+        **核心哲学**：命里有时终须有。无论好坏，实话实说，绝不积口德。
+        
+        **推演逻辑**：
+        1. **抓用神**：死磕《滴天髓》的强弱法则，看八字 [b]${ctx.baziString}[/b] 是身强还是身弱。
+        2. **断流年**：结合《三命通会》的刑冲克害，直断 [h]${ctx.currentLiunianSimple}[/h] 会发生什么破事。
+        3. **警告**：用江湖黑话（如“枭神夺食”、“伤官见官”）吓醒用户。
+        
+        **当前任务**：
+        给 ${ctx.name} 算个明白。别整虚的。结论必须 [h]高亮[/h]！
+        `
+    },
+    { 
+        id: 'alice', name: 'Alice林', icon: 'fa-heart', desc: '现代心理 · 疗愈成长',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：Alice林
+        **必读经典**：阿德勒《被讨厌的勇气》、荣格《红书》、弗洛伊德《梦的解析》。
+        **核心哲学**：性格决定命运，所谓的“命”往往是潜意识的强迫性重复。
+        
+        **推演逻辑**：
+        1. **课题分离**：运用阿德勒心理学，帮用户区分“他人的课题”与“自己的课题”。
+        2. **原型分析**：运用荣格理论，将八字十神 (${ctx.baziDetail}) 解构为心理原型（如：七杀=阴影，正印=大母神）。
+        3. **积极心理**：结合流年 [h]${ctx.currentLiunianSimple}[/h]，给出“自我实现”的具体建议。
+        
+        **当前任务**：
+        ${ctx.name}。现在是 **${ctx.currentTime}**。
+        请用心理学治愈Ta。建议请用 [h]高亮[/h]。
+        `
+    },
+    { 
+        id: 'guiguzi', name: '鬼谷子', icon: 'fa-chess', desc: '纵横家 · 局势谋略',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：鬼谷子
+        **必读经典**：《鬼谷子》（本经阴符七术）、《孙子兵法》、《博弈论》(Game Theory)。
+        **核心哲学**：捭阖之术，阴阳之谋。命理即战场，五行即筹码。
+        
+        **推演逻辑**：
+        1. **审时度势**：将大运 [b]${ctx.currentDayunSimple}[/b] 视为宏观经济周期。
+        2. **敌我博弈**：将八字中的“比劫”视为竞争对手，将“财星”视为市场份额。
+        3. **破局之策**：运用《鬼谷子》的“飞箝之术”，教用户如何在 [h]${ctx.currentLiunianSimple}[/h] 实现利益最大化。
+        
+        **当前任务**：
+        用户 ${ctx.name}。当前时间 **${ctx.currentTime}**。
+        请谋划破局之策。策略核心点请用 [h]高亮[/h]。
+        `
+    },
+    { 
+        id: 'nalan', name: '纳兰', icon: 'fa-feather', desc: '婉约派 · 痴情解盘',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 角色核心：纳兰容若
+        **必读经典**：《纳兰词》、《红楼梦》、《西厢记》、《花间集》。
+        **核心哲学**：情不知所起，一往而深。人生若只如初见。
+        
+        **推演逻辑**：
+        1. **问情**：从八字看桃花旺衰，引用《红楼梦》中的判词风格。
+        2. **解缘**：结合流年 [h]${ctx.currentLiunianSimple}[/h]，判断是“金风玉露一相逢”还是“多情自古空余恨”。
+        3. **咏叹**：用一句契合意境的诗词作为结语。
+        
+        **当前任务**：
+        用户 ${ctx.name}。当前时间 **${ctx.currentTime}**。
+        请解开施主的情锁。关键缘分请用 [h]高亮[/h]。
+        `
+    },
+    { 
+        id: 'all', name: '诸仙会审', icon: 'fa-users', desc: '天机阁 · 联合推演',
+        systemPrompt: (ctx) => `
+        ${BASE_RULES}
+        
+        ### 🎭 场景定义：诸仙会审 (Grand Debate)
+        你现在是【天机阁阁主】，记录六位大师的辩论。
+        
+        **用户档案**：
+        - 八字：${ctx.baziString}
+        - 大运：${ctx.currentDayunSimple} | 流年：${ctx.currentLiunianSimple}
+        
+        **辩论逻辑**：
+        1.  **[b]鬼谷子[/b]** (引用《兵法》) 与 **[b]清虚道长[/b]** (引用《易经》) 争论宏观局势。
+        2.  **[b]铁口刘[/b]** (引用《滴天髓》) 泼冷水。
+        3.  **[b]Alice林[/b]** (引用阿德勒/荣格) 从潜意识角度分析，但被 **[b]玄机子[/b]** 用数据打断。
+        4.  **[b]纳兰[/b]** (引用诗词) 感叹情关难过。
+        
+        **📜 阁主判词**：
+        - 必须融合百家之长，给出**确定性**的指引。
+        - 篇幅充沛（>200字）。
+        - 核心结论 [h]高亮[/h]。
+        `
+    }
+];
+
+createApp({
+    setup() {
+        let md;
+        try {
+            md = window.markdownit ? window.markdownit({ html: true, breaks: true }) : { render: (t) => t };
+        } catch(e) {
+            md = { render: (t) => t };
+        }
+
+        const showSettings = ref(false);
+        const showHistory = ref(false);
+        const chartGenerated = ref(false);
+        const isLoading = ref(false);
+        const isVerifying = ref(false);
+        const isCalculating = ref(false);
+        const verifyStatus = ref(null);
+        const userMessage = ref('');
+        const chatHistory = ref([]);
+        const chatRef = ref(null);
+        const sessions = ref([]);
+        const currentSessionId = ref(null);
+        
+        const isDarkMode = ref(false);
+
+        const initDarkMode = () => {
+            const savedMode = localStorage.getItem('dc_dark_mode');
+            if (savedMode === 'true') {
+                isDarkMode.value = true;
+                document.documentElement.classList.add('dark');
+            } else {
+                isDarkMode.value = false;
+                document.documentElement.classList.remove('dark');
+            }
+        };
+
+        const toggleDarkMode = () => {
+            isDarkMode.value = !isDarkMode.value;
+            if (isDarkMode.value) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('dc_dark_mode', 'true');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('dc_dark_mode', 'false');
+            }
+        };
+        
+        const formatDate = (ts) => {
+            if (!ts) return '';
+            return new Date(ts).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+        };
+
+        const formatMsgTime = (ts) => {
+            if (!ts) return '';
+            const d = new Date(ts);
+            const hours = d.getHours().toString().padStart(2, '0');
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        };
+
+        const sortedSessions = computed(() => {
+            if (!sessions.value) return [];
+            return [...sessions.value].sort((a, b) => b.timestamp - a.timestamp);
+        });
+
+        const settings = reactive({
+            baseUrl: localStorage.getItem('dc_baseUrl') || 'https://api.openai.com',
+            apiKey: localStorage.getItem('dc_apiKey') || '',
+            model: localStorage.getItem('dc_model') || 'gpt-4o'
+        });
+
+        const defaultCity = CHINA_AREA_DATA['北京市'] ? CHINA_AREA_DATA['北京市'][0] : { name: '未知', lon: 116.4 };
+        const userInput = reactive({ name: '', gender: 'male', date: '', time: 12, province: '北京市', city: defaultCity });
+        // ✨ 新增字段：纳音、星座、空亡、命宫
+        const chartData = reactive({ 
+            name: '', gender: '', baziString: '', trueSolarTime: '', wuxingDetail: '', wuxingSimple: '', ziweiSummary: '', 
+            currentDayunStr: '', currentDayunSimple: '', currentLiunianStr: '', currentLiunianSimple: '', baziDetail: '', ziweiDeep: '',
+            nayin: '', constellation: '', kongwang: '', minggong: '', zodiac: '', lunarDateStr: '', wuxingCounts: ''
+        });
+        
+        const baziColumns = ref([
+            { label: '年柱', val: '' },
+            { label: '月柱', val: '' },
+            { label: '日柱', val: '' },
+            { label: '时柱', val: '' }
+        ]);
+
+        const currentPersonaId = ref('qingxu');
+        const currentPersona = computed(() => PERSONAS.find(p => p.id === currentPersonaId.value));
+
+        const availableCities = computed(() => CHINA_AREA_DATA[userInput.province] || []);
+        const handleProvinceChange = () => { if (CHINA_AREA_DATA[userInput.province]) userInput.city = CHINA_AREA_DATA[userInput.province][0]; };
+
+        // 🚀 核心修复：基于自定义 Token 的解析流水线
+        const renderMarkdown = (t) => {
+            if (!t) return '';
+            try {
+                let clean = t;
+                
+                // 1. 暴力清除所有 * 号
+                clean = clean.replace(/\*/g, '');
+
+                // ✨ PDM & Dev Feature: 智能视觉分层 (Smart Visual Layering)
+                clean = clean.replace(/(\n)(\s*\[b\])/g, (match, p1, p2) => `${p1}\n<div class="w-full h-4"></div>\n${p2}`);
+
+                // 2. 解析自定义协议
+                // [b] -> strong
+                clean = clean.replace(/\[b\](.*?)\[\/b\]/g, '<strong>$1</strong>');
+                // [h] -> highlight
+                clean = clean.replace(/\[h\](.*?)\[\/h\]/g, '<span class="highlight-marker">$1</span>');
+                // [s] -> action text
+                clean = clean.replace(/\[s\](.*?)\[\/s\]/g, '<span class="action-text">$1</span>');
+
+                // 3. 渲染
+                return md.render(clean);
+            } catch(e) {
+                return t; 
+            }
+        };
+
+        const triggerHaptic = (pattern) => {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(pattern); } catch(e) {}
+            }
+        };
+
+        onMounted(() => {
+            initDarkMode();
+            const savedSessions = localStorage.getItem('dc_sessions');
+            if (savedSessions) {
+                try {
+                    sessions.value = JSON.parse(savedSessions);
+                } catch(e) { console.error("History Load Error", e); }
+            }
+        });
+
+        const saveSession = () => {
+            if (!currentSessionId.value) return;
+            const validHistory = chatHistory.value.filter(m => m.role !== 'event'); 
+            const summary = validHistory.length > 1 ? validHistory[1].content.slice(0, 50) + '...' : '新会话';
+            
+            const sessionData = {
+                id: currentSessionId.value,
+                timestamp: Date.now(),
+                name: userInput.name || '有缘人',
+                summary: summary,
+                userInput: { ...userInput },
+                chartData: { ...chartData },
+                chatHistory: chatHistory.value,
+                personaId: currentPersonaId.value
+            };
+            const index = sessions.value.findIndex(s => s.id === currentSessionId.value);
+            if (index !== -1) sessions.value[index] = sessionData;
+            else sessions.value.unshift(sessionData);
+            localStorage.setItem('dc_sessions', JSON.stringify(sessions.value));
+            localStorage.setItem('dc_last_session_id', currentSessionId.value);
+        };
+
+        const clearAllSessions = () => {
+            if(confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+                sessions.value = [];
+                localStorage.removeItem('dc_sessions');
+                localStorage.removeItem('dc_last_session_id');
+                // Reset current session if active
+                if(currentSessionId.value) {
+                    chartGenerated.value = false;
+                    currentSessionId.value = null;
+                    showHistory.value = false;
+                }
+            }
+        };
+
+        watch(chatHistory, () => { if (chartGenerated.value) saveSession(); }, { deep: true });
+
+        const generateChart = async () => {
+            if (!userInput.date) return alert("请选择日期");
+            
+            isCalculating.value = true;
+            triggerHaptic(10); 
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            try {
+                const [y, m, d] = userInput.date.split('-').map(Number);
+                const h = parseInt(userInput.time);
+                const baseSolar = new Date(y, m-1, d, h);
+                const offsetMin = (userInput.city.lon - 120) * 4; 
+                baseSolar.setMinutes(baseSolar.getMinutes() + offsetMin);
+                const trueSolar = Solar.fromDate(baseSolar);
+                const lunar = Lunar.fromSolar(trueSolar);
+                const bazi = lunar.getEightChar();
+                
+                const genderNum = userInput.gender === 'male' ? 1 : 0; 
+                chartData.name = userInput.name || '有缘人';
+                chartData.gender = userInput.gender === 'male' ? '男' : '女';
+                chartData.trueSolarTime = trueSolar.toYmdHms();
+                chartData.baziString = `${bazi.getYearGan()}${bazi.getYearZhi()} ${bazi.getMonthGan()}${bazi.getMonthZhi()} ${bazi.getDayGan()}${bazi.getDayZhi()} ${bazi.getTimeGan()}${bazi.getTimeZhi()}`;
+                
+                baziColumns.value = [
+                    { label: '年柱', val: bazi.getYearGan() + bazi.getYearZhi() },
+                    { label: '月柱', val: bazi.getMonthGan() + bazi.getMonthZhi() },
+                    { label: '日柱', val: bazi.getDayGan() + bazi.getDayZhi() },
+                    { label: '时柱', val: bazi.getTimeGan() + bazi.getTimeZhi() }
+                ];
+
+                chartData.baziDetail = chartData.baziString; 
+                chartData.wuxingDetail = `日主${bazi.getDayWuXing()} | ${bazi.getDayNaYin()}命`;
+                chartData.wuxingSimple = `${bazi.getDayWuXing()}命`;
+                
+                // ✨ 新增数据挖掘
+                chartData.nayin = bazi.getDayNaYin(); // 纳音
+                chartData.zodiac = lunar.getYearShengXiao(); // 生肖
+                chartData.constellation = trueSolar.getXingZuo(); // 星座
+                chartData.lunarDateStr = lunar.toString(); // 农历
+                // 旬空(空亡) - 日柱空亡
+                chartData.kongwang = bazi.getDayXunKong();
+                // 命宫 (lunar.js 不直接支持，简单推算或留空)
+                chartData.minggong = lunar.getEightChar().getMingGong();
+
+
+                const yun = bazi.getYun(genderNum);
+                const dayunArr = yun.getDaYun();
+                let currentDayun = null;
+                const currentYear = new Date().getFullYear();
+                
+                for (let i = 0; i < dayunArr.length; i++) {
+                    const dy = dayunArr[i];
+                    const startYear = dy.getStartYear();
+                    const endYear = dy.getEndYear();
+                    if (currentYear >= startYear && currentYear < endYear) {
+                        currentDayun = dy;
+                        break;
+                    }
+                }
+                
+                if (currentDayun) {
+                    chartData.currentDayunStr = `${currentDayun.getGanZhi()}运 (${currentDayun.getStartAge()}-${currentDayun.getEndAge()}岁)`;
+                    chartData.currentDayunSimple = `${currentDayun.getGanZhi()}运`;
+                } else {
+                    chartData.currentDayunStr = "未起运";
+                    chartData.currentDayunSimple = "未起运";
+                }
+
+                const currentLunarYear = Lunar.fromDate(new Date()).getYearInGanZhi();
+                chartData.currentLiunianStr = `${currentYear} (${currentLunarYear})年`;
+                chartData.currentLiunianSimple = `${currentLunarYear}年`;
+
+                let ziweiSummary = "星盘隐晦";
+                let ziweiDeep = "";
+                if (window.iztro) {
+                    const timeIdx = Math.floor((trueSolar.getHour()+1)/2) % 12;
+                    const astrolabe = window.iztro.astro.bySolar(`${y}-${m}-${d}`, timeIdx, chartData.gender, true);
+                    
+                    const mingPalace = astrolabe.palaces.find(p => p.name === '命宫');
+                    if(mingPalace) {
+                        const stars = mingPalace.majorStars.map(s => s.name).join(',');
+                        ziweiSummary = `${stars || '无主星'} 在${mingPalace.earthlyBranch}`;
+                    }
+
+                    const keyPalaces = ['命宫', '财帛', '官禄', '迁移'];
+                    const deepInfo = keyPalaces.map(name => {
+                        const p = astrolabe.palaces.find(x => x.name === name);
+                        if (!p) return '';
+                        const majors = p.majorStars.map(s => s.name + (s.brightness ? `(${s.brightness})` : '')).join(',');
+                        const minors = p.minorStars.map(s => s.name).join(',');
+                        return `${name}:[${majors} | ${minors}]`;
+                    }).join('; ');
+                    ziweiDeep = deepInfo;
+                }
+                chartData.ziweiSummary = ziweiSummary;
+                chartData.ziweiDeep = ziweiDeep;
+
+                chartGenerated.value = true;
+                isCalculating.value = false; 
+                triggerHaptic([50, 30, 50]); 
+
+                currentSessionId.value = Date.now().toString();
+                chatHistory.value = [];
+                
+                const welcomeMsg = currentPersona.value.id === 'all' 
+                    ? `诸仙已就位。请施主出题，我等将为您联合推演。` 
+                    : `${currentPersona.value.name}已就位。观缘主命盘，${chartData.baziString}。`;
+
+                chatHistory.value.push({
+                    role: 'assistant',
+                    content: welcomeMsg,
+                    name: currentPersona.value.name,
+                    icon: currentPersona.value.icon,
+                    desc: currentPersona.value.desc,
+                    timestamp: Date.now()
+                });
+                saveSession();
+
+            } catch(e) {
+                console.error("Chart Generation Failed", e);
+                isCalculating.value = false;
+                alert("排盘失败，请检查输入数据");
+            }
+        };
+
+        const loadSession = (id) => {
+            const session = sessions.value.find(s => s.id === id);
+            if (!session) return;
+            
+            const savedProvince = session.userInput.province;
+            const savedCityName = session.userInput.city.name;
+            
+            Object.assign(userInput, session.userInput); 
+            
+            if (savedProvince && CHINA_AREA_DATA[savedProvince]) {
+                const matchedCity = CHINA_AREA_DATA[savedProvince].find(c => c.name === savedCityName);
+                if (matchedCity) {
+                    userInput.city = matchedCity;
+                }
+            }
+
+            Object.assign(chartData, session.chartData);
+            if(chartData.baziString) {
+                const parts = chartData.baziString.split(' ');
+                if(parts.length === 4) {
+                    baziColumns.value = [
+                        { label: '年柱', val: parts[0] },
+                        { label: '月柱', val: parts[1] },
+                        { label: '日柱', val: parts[2] },
+                        { label: '时柱', val: parts[3] }
+                    ];
+                }
+            }
+
+            chatHistory.value = session.chatHistory;
+            currentPersonaId.value = session.personaId || 'qingxu';
+            currentSessionId.value = session.id;
+            chartGenerated.value = true;
+            showHistory.value = false;
+            localStorage.setItem('dc_last_session_id', id);
+            nextTick(scrollToBottom);
+        };
+
+        const deleteSession = (id) => {
+            sessions.value = sessions.value.filter(s => s.id !== id);
+            localStorage.setItem('dc_sessions', JSON.stringify(sessions.value));
+            if (currentSessionId.value === id) {
+                currentSessionId.value = null;
+                chartGenerated.value = false;
+            }
+        };
+
+        const returnToHome = () => {
+            chartGenerated.value = false;
+            currentSessionId.value = null;
+            localStorage.removeItem('dc_last_session_id');
+        };
+
+        const switchPersona = (id) => {
+            triggerHaptic(10); 
+            currentPersonaId.value = id;
+            chatHistory.value.push({
+                role: 'event', 
+                content: `已切换至 ${currentPersona.value.name}`,
+                timestamp: Date.now()
+            });
+            nextTick(scrollToBottom);
+        };
+
+        const handleSend = async () => {
+            if (!userMessage.value.trim() || isLoading.value) return;
+            if (!settings.apiKey) return alert("请先在右上角设置 API Key");
+
+            triggerHaptic(10); 
+            const text = userMessage.value;
+            userMessage.value = '';
+            
+            chatHistory.value.push({ role: 'user', content: text, timestamp: Date.now() });
+            
+            await nextTick();
+            scrollToBottom();
+
+            isLoading.value = true;
+            const llm = new LLMService(settings);
+
+            const nowTimeStr = new Date().toLocaleString('zh-CN', { hour12: false });
+            
+            const contextData = {
+                name: chartData.name,
+                gender: chartData.gender,
+                baziString: chartData.baziString,
+                trueSolarTime: chartData.trueSolarTime,
+                wuxingDetail: chartData.wuxingDetail,
+                ziweiSummary: chartData.ziweiSummary,
+                currentDayunStr: chartData.currentDayunStr,
+                currentLiunianStr: chartData.currentLiunianStr,
+                currentLiunianSimple: chartData.currentLiunianSimple, // Fixed missing prop
+                currentDayunSimple: chartData.currentDayunSimple,     // Fixed missing prop
+                baziDetail: chartData.baziDetail,
+                ziweiDeep: chartData.ziweiDeep,
+                currentTime: nowTimeStr,
+                // ✨ Full Context Injection
+                zodiac: chartData.zodiac,
+                lunarDateStr: chartData.lunarDateStr,
+                nayin: chartData.nayin,
+                kongwang: chartData.kongwang,
+                minggong: chartData.minggong,
+                constellation: chartData.constellation
+            };
+
+            const systemPrompt = currentPersona.value.systemPrompt(contextData);
+            
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                ...chatHistory.value
+                    .filter(m => m.role === 'user' || m.role === 'assistant')
+                    .slice(-10)
+                    .map(m => ({ role: m.role, content: m.content }))
+            ];
+            
+            if(messages.length > 0 && messages[messages.length-1].role === 'user') {
+                messages[messages.length-1].content += `\n(系统自动注入时间戳: ${nowTimeStr})`;
+            }
+
+            const aiMsg = reactive({
+                role: 'assistant',
+                content: '',
+                name: currentPersona.value.name,
+                icon: currentPersona.value.icon,
+                desc: currentPersona.value.desc,
+                timestamp: Date.now(),
+                isTyping: true
+            });
+            chatHistory.value.push(aiMsg);
+
+            await llm.chatStream(
+                messages,
+                (chunk) => {
+                    aiMsg.content += chunk;
+                    scrollToBottom();
+                },
+                (err) => {
+                    aiMsg.content += `\n[错误: ${err}]`;
+                    aiMsg.isTyping = false;
+                },
+                () => {
+                    aiMsg.isTyping = false;
+                    isLoading.value = false;
+                    triggerHaptic(20); 
+                    saveSession();
+                }
+            );
+        };
+
+        const runTest = async () => {
+            if(!settings.apiKey) return verifyStatus.value = { ok: false, msg: '请输入 API Key' };
+            isVerifying.value = true;
+            verifyStatus.value = null;
+            const llm = new LLMService(settings);
+            verifyStatus.value = await llm.testConnection();
+            isVerifying.value = false;
+        };
+
+        const saveSettings = () => {
+            localStorage.setItem('dc_baseUrl', settings.baseUrl);
+            localStorage.setItem('dc_apiKey', settings.apiKey);
+            localStorage.setItem('dc_model', settings.model);
+            showSettings.value = false;
+        };
+
+        const scrollToBottom = () => { if(chatRef.value) chatRef.value.scrollTop = chatRef.value.scrollHeight; };
+        
+        return {
+            chinaAreaData: CHINA_AREA_DATA, availableCities, handleProvinceChange,
+            shichenOptions: SHICHEN_OPTIONS, personas: PERSONAS,
+            settings, userInput, chartData, baziColumns, 
+            showSettings, showHistory, chartGenerated, isLoading, isVerifying, verifyStatus, isCalculating,
+            userMessage, chatHistory, chatRef, sessions, sortedSessions,
+            currentPersonaId, currentPersona,
+            generateChart, switchPersona, handleSend, runTest, saveSettings, 
+            renderMarkdown, 
+            loadSession, deleteSession, clearAllSessions, returnToHome, formatMsgTime, formatDate,
+            isDarkMode, toggleDarkMode
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
